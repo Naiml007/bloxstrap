@@ -1,4 +1,4 @@
-﻿// To debug the automatic updater:
+// To debug the automatic updater:
 // - Uncomment the definition below
 // - Publish the executable
 // - Launch the executable (click no when it asks you to upgrade)
@@ -1128,14 +1128,17 @@ namespace Bloxstrap
 
                 // compute total bytes to download
                 int totalPackedSize = _versionPackageManifest.Sum(package => package.PackedSize);
-                _progressIncrement = (double)ProgressBarMaximum / totalPackedSize;
 
                 if (Dialog is WinFormsDialogBase)
                     _taskbarProgressMaximum = (double)TaskbarProgressMaximumWinForms;
                 else
                     _taskbarProgressMaximum = (double)TaskbarProgressMaximumWpf;
 
-                _taskbarProgressIncrement = _taskbarProgressMaximum / (double)totalPackedSize;
+                if (totalPackedSize > 0)
+                {
+                    _progressIncrement = (double)ProgressBarMaximum / totalPackedSize;
+                    _taskbarProgressIncrement = _taskbarProgressMaximum / (double)totalPackedSize;
+                }
             }
 
             var extractionTasks = new List<Task>();
@@ -1182,7 +1185,7 @@ namespace Bloxstrap
                 if (hklmKey is not null || hkcuKey is not null)
                 {
                     // reset prompt state if the user has it installed
-                    App.State.Prop.PromptWebView2Install = true;
+                    App.State.Prop.PromptWebView2Install = false;
                 }   
                 else
                 {
@@ -1267,11 +1270,11 @@ namespace Bloxstrap
 
             App.Logger.WriteLine(LOG_IDENT, "Registering approximate program size...");
 
-            int distributionSize = _versionPackageManifest.Sum(x => x.Size + x.PackedSize) / 1024;
+            int distributionSize = _versionPackageManifest.Sum(x => x.Size) / 1024;
 
             AppData.DistributionState.Size = distributionSize;
 
-            int totalSize = App.PlayerState.Prop.Size + App.PlayerState.Prop.Size;
+            int totalSize = App.PlayerState.Prop.Size + App.StudioState.Prop.Size;
 
             using (var uninstallKey = Registry.CurrentUser.CreateSubKey(App.UninstallKey))
             {
@@ -1704,3 +1707,7 @@ namespace Bloxstrap
         #endregion
     }
 }
+
+
+
+
